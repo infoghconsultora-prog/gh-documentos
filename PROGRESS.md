@@ -8,6 +8,7 @@ Estado al 2026-10-23.
 - No hay Service Worker (no aplica subir `VERSION`).
 - La versión local (`server.py`, `iniciar.command`, `datos/`, `cdf.py`, `herramientas/`) sigue en la carpeta pero fuera de git.
 
+- `BACKEND_URL` apunta al /exec de gh-documentos-backend (desplegado v1).
+
 ## Qué falta
-- Poner `BACKEND_URL` real en `js/backend.js` cuando se despliegue `gh-documentos-backend`, y subir.
 - Prueba de punta a punta con login real (Felipe).
