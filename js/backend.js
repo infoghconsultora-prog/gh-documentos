@@ -44,7 +44,7 @@
     el = document.createElement('div');
     el.id = 'gh-login';
     el.setAttribute('style', 'position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg,#f7f8f4);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Helvetica,Arial,sans-serif;color:var(--label,#2b2f26)');
-    el.innerHTML = '<div style="background:var(--surface,#fff);border-radius:20px;padding:36px 32px;max-width:360px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.12)">' +
+    el.innerHTML = '<div style="background:var(--surface,var(--bg-grouped-secondary,#fff));border-radius:20px;padding:36px 32px;max-width:360px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.12)">' +
       '<img src="assets/logo-gh.png" alt="GH Consultora" style="height:56px;width:auto;margin:0 auto 16px;display:block">' +
       '<h1 style="font-size:20px;line-height:26px;margin:0 0 6px;font-weight:600" id="gh-login-t"></h1>' +
       '<p style="margin:0 0 20px;font-size:14px;line-height:20px;opacity:.7">Entrá con tu cuenta de Google del equipo.</p>' +
