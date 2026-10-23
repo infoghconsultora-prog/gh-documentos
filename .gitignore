@@ -11,3 +11,7 @@
 !README.md
 !SEGURIDAD.md
 !PROGRESS.md
+!icons/
+!icons/*.png
+!apple-touch-icon.png
+!manifest.webmanifest

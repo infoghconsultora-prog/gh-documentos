@@ -12,3 +12,7 @@ Estado al 2026-10-23.
 
 ## Qué falta
 - Prueba de punta a punta con login real (Felipe).
+
+## 2026-10-23 · Marca unificada
+- Íconos (`icons/`, `apple-touch-icon.png`) y `manifest.webmanifest`; `.gitignore` los deja pasar. Ícono = documento + insignia GH, igual al de GH TOOLS.
+- Login igual al de las demás apps (halo verde, logo grande, nombre de la herramienta); solo marcado y estilos en `js/backend.js`.

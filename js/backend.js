@@ -43,15 +43,16 @@
     if (el) return el;
     el = document.createElement('div');
     el.id = 'gh-login';
-    el.setAttribute('style', 'position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg,#f7f8f4);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Helvetica,Arial,sans-serif;color:var(--label,#2b2f26)');
-    el.innerHTML = '<div style="background:var(--surface,var(--bg-grouped-secondary,#fff));border-radius:20px;padding:36px 32px;max-width:360px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.12)">' +
-      '<img src="assets/logo-gh.png" alt="GH Consultora" style="height:56px;width:auto;margin:0 auto 16px;display:block">' +
-      '<h1 style="font-size:20px;line-height:26px;margin:0 0 6px;font-weight:600" id="gh-login-t"></h1>' +
-      '<p style="margin:0 0 20px;font-size:14px;line-height:20px;opacity:.7">Entrá con tu cuenta de Google del equipo.</p>' +
-      '<div id="gh-login-btn" style="display:flex;justify-content:center;min-height:44px"></div>' +
-      '<p id="gh-login-err" role="alert" style="margin:14px 0 0;font-size:13px;line-height:18px;color:#b3261e;display:none"></p></div>';
+    el.className = 'gh-login';
+    el.setAttribute('style', 'position:fixed;inset:0;z-index:1000;overflow:auto');
+    el.innerHTML = '<div class="gh-login-card">' +
+      '<img class="gh-login-logo" src="assets/logo-gh.png" alt="GH Consultora">' +
+      '<h1 id="gh-login-t"></h1>' +
+      '<p>Entrá con tu cuenta de Google del equipo.</p>' +
+      '<div id="gh-login-btn" style="display:flex;justify-content:center;min-height:44px;color-scheme:light"></div>' +
+      '<p id="gh-login-err" role="alert" style="margin:14px 0 0;font-size:13px;line-height:18px;color:var(--gl-red);font-weight:600;display:none"></p></div>';
     document.body.appendChild(el);
-    el.querySelector('#gh-login-t').textContent = document.title;
+    el.querySelector('#gh-login-t').textContent = 'Generador de documentos';
     return el;
   }
 
