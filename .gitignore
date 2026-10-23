@@ -1,0 +1,13 @@
+# Repo público: solo el frontend. Nada de datos de clientes (se sirven desde el backend).
+*
+!.gitignore
+!index.html
+!js/
+!js/*.js
+!vendor/
+!vendor/*.js
+!assets/
+!assets/logo-gh.png
+!README.md
+!SEGURIDAD.md
+!PROGRESS.md
