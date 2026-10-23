@@ -16,3 +16,7 @@ Estado al 2026-10-23.
 ## 2026-10-23 · Marca unificada
 - Íconos (`icons/`, `apple-touch-icon.png`) y `manifest.webmanifest`; `.gitignore` los deja pasar. Ícono = documento + insignia GH, igual al de GH TOOLS.
 - Login igual al de las demás apps (halo verde, logo grande, nombre de la herramienta); solo marcado y estilos en `js/backend.js`.
+
+## 2026-10-23 · Notas
+- Nuevo tipo **Nota** (texto libre con destinatario, referencia, expediente→evaluador, modelos de texto, comprobante y anexos) y **Designación** actualizada al formato vigente (a partir de la fecha, dos profesionales, CUIT, secretario actual).
+- Backend v2: `getData` devuelve `destinatarios` (se aprenden al guardar una nota) y la carpeta sugerida se busca por expediente comparando los dos primeros grupos de números (0079-21 = 0079-2021).

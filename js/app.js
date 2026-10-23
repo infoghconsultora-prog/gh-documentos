@@ -13,6 +13,7 @@
     { id: 'manifiestos', nombre: 'Manifiestos' },
     { id: 'ratificacion', nombre: 'Ratificación' },
     { id: 'designacion', nombre: 'Designación' },
+    { id: 'nota', nombre: 'Nota' },
     { id: 'cdf', nombre: 'CDF' }
   ];
   const MESES_TXT = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
@@ -140,8 +141,20 @@
     ot: ['Sr. Subsecretario de RSU', 'Ing. Santiago Ceballos'],
     manifiestos: ['Sr. Sub Secretario de Residuos', 'Ing. Santiago Ceballos'],
     ratificacion: ['Sr. Sub Secretario de Residuos', 'Ing. Santiago Ceballos'],
-    designacion: ['Sr. Secretario de Estado de Ambiente y Desarrollo Sustentable', '']
+    designacion: ['Sr. Secretario de Estado de Ambiente y Desarrollo Sustentable', 'Sr. Federico Rios Yañez'],
+    nota: ['Sr. Sub Secretario de Residuos', 'Ing. Santiago Ceballos']
   };
+
+  // Textos de notas que se repiten (salen de las notas reales de 2026). Lo que va entre [ ] se completa a mano.
+  const MODELOS = [
+    { n: 'Presentación de documentación', t: 'Nos dirigimos a Usted con el fin de presentar la siguiente documentación:\n\n• [documento 1]\n• [documento 2]' },
+    { n: 'Solicitud de renovación', t: 'Nos dirigimos a Ud. a fin de solicitar la renovación de [DIA / Certificado Ambiental / CAD], otorgado mediante Resolución N.º [número y año].\n\nSe adjunta la siguiente documentación:\n\n• [documento 1]\n• [documento 2]' },
+    { n: 'Respuesta a informe técnico', t: 'Nos dirigimos a Ud. con motivo de dar respuesta al informe N.º [número].\n\nSe adjunta la siguiente documentación:\n\n• [documento 1]\n• [documento 2]' },
+    { n: 'Trazabilidad de residuos peligrosos', t: 'Nos dirigimos a Usted con motivo de presentar la trazabilidad de los residuos peligrosos generados en la empresa de referencia en el año [año] y el período comprendido hasta la actualidad de [año].\n\nSe adjunta la siguiente información:\n\n• Cuadro de la generación de RRPP en [año]\n• Cuadro de la generación de RRPP en [año]\n• Su respectivo CDF' },
+    { n: 'Retiro de RAEE', t: 'En mi carácter de Representante Técnica de la empresa de referencia, me dirijo a Ud. a fin de solicitar el retiro y la disposición final de Residuos de Aparatos Eléctricos y Electrónicos (RAEE) generados en nuestras instalaciones, de acuerdo con los procedimientos establecidos por la Secretaría.\n\nA continuación, se detalla el material a retirar:\n\n• [detalle del material]\n\nQuedamos a disposición para coordinar la fecha y modalidad de retiro del material detallado.' },
+    { n: 'Presentación de pago de tasas', t: 'A través del presente escrito nos dirigimos a Ud., con el fin de informar que la empresa realizó un pago en concepto de [concepto] correspondiente a [período] por el monto de $[monto] con fecha [fecha].\n\nSe adjunta comprobante de pago.' },
+    { n: 'Cambio de rúbrica de libro de registro', t: 'Nos dirigimos a usted con el fin de presentar libro de registro para nueva rúbrica actualizada, cabe destacar que este libro corresponde a [tipo de libro], en el cual se detectó un error en el título de la rúbrica inicial donde dice [texto erróneo], tener en cuenta esta corrección para la nueva rúbrica.' }
+  ];
 
   function formHTML() {
     const t = S.tipo, d = S.datos;
@@ -150,26 +163,35 @@
       '<datalist id="dlCont"><option value="A GRANEL"><option value="1"><option value="2"><option value="3"><option value="4"></datalist>' +
       '<datalist id="dlGen">' + d.entidades.generadores.map(x => '<option value="' + esc(x.nombre) + '">').join('') + '</datalist>' +
       '<datalist id="dlTra">' + d.entidades.transportistas.map(x => '<option value="' + esc(x.nombre) + '">').join('') + '</datalist>' +
+      '<datalist id="dlCierre"><option value="Sin otro particular, saludamos a usted atentamente."><option value="Sin otro particular, saludo a Ud. atte."><option value="Sin otro particular, saludo a Ud. muy atentamente."><option value="Saludamos a Usted atte."></datalist>' +
       '<datalist id="dlMotivo"><option value="generados en tareas de mantenimiento en la empresa"><option value="generados en el predio"></datalist>';
     let h = dl;
     if (esCarta()) {
       const opEmp = [['', 'Elegir empresa…']].concat(d.empresas.map(e => [e.clave, e.nombre]));
+      const nota = t === 'nota', des = t === 'designacion';
       h += '<section class="card"><h2>Empresa y trámite</h2><div class="grid">' +
         F.sel('emp', 'Empresa', opEmp, { cls: 'full', v: S.empSel || '' }) +
         F.text('nombreEmp', 'Nombre en la nota', { gen: 1, cls: 'full' }) +
-        (t === 'designacion' ? F.text('exp', 'Expediente (opcional)', { list: 'dlExp', cls: 'full' }) :
-          F.text('exp', 'Expediente', { list: 'dlExp', gen: 1, hint: '<span id="expHint"></span>' })) +
-        (t === 'designacion' ? '' :
-          F.text('eval', 'Evaluador/a', { list: 'dlEval' })) +
-        (t === 'designacion' ? '' : F.text('rca', 'RCA', { v: '126 GH Consultora' })) +
+        (nota ? F.text('ref', 'Referencia (opcional)', { cls: 'full', ph: 'Ej: Solicitud de renovación de CAD' }) : '') +
+        (des ? F.text('exp', 'Expediente (opcional)', { list: 'dlExp', cls: 'full' }) :
+          F.text('exp', nota ? 'Expediente (opcional)' : 'Expediente', { list: 'dlExp', gen: nota ? 0 : 1, hint: '<span id="expHint"></span>' })) +
+        (des ? '' : F.text('eval', nota ? 'Evaluador/a o área' : 'Evaluador/a', { list: 'dlEval' })) +
+        (nota ? F.sel('etiqEval', 'Rótulo', [['auto', 'Evaluador/a'], ['Área:', 'Área']], {}) : '') +
+        ((nota || des) ? F.text('cuit', 'CUIT (opcional)', {}) : '') +
+        (nota ? F.text('ubic', 'Ubicación (opcional)', {}) : '') +
+        F.text('rca', 'RCA', { v: des ? '126 GH Consultora/ Bioing. Gabriela J. Hidalgo' : '126 GH Consultora', cls: des ? 'full' : '' }) +
+        (des ? F.text('rca2', 'Línea adicional (opcional)', { v: 'Ing. M. Florencia Palumbo', cls: 'full' }) : '') +
         F.date('fecha', 'Fecha de la nota', { v: hoyISO() }) +
         '</div></section>';
+      const presets = d.destinatarios || [];
       h += '<section class="card"><h2>Destinatario</h2><div class="grid">' +
+        (nota ? F.sel('destPre', 'Elegir de la lista', [['', 'Escribir a mano…']].concat(presets.map((x, i) => [String(i), x.cargo + (x.nombre ? ' · ' + x.nombre : '')])), { cls: 'full' }) : '') +
         F.text('destCargo', 'Cargo', { v: DEST[t][0], cls: 'full' }) +
-        (t === 'designacion' ? F.text('destOrg', 'Organismo', { v: 'Gobierno Provincia de San Juan', cls: 'full' }) : '') +
-        F.text('destNombre', 'Nombre', { v: DEST[t][1], ph: t === 'designacion' ? 'Nombre del/de la secretario/a actual' : '' }) +
-        F.sel('saludo', 'Fórmula', [['Presente.', 'Presente'], ['S________________/_________________D', 'S____/____D'], ['', 'Ninguna']], { v: t === 'designacion' ? 'S________________/_________________D' : 'Presente.' }) +
-        F.sel('persona', 'Redacción', [['nos', 'Plural: "Nos dirigimos…"'], ['yo', 'Singular: "Tengo el agrado…"']], { v: t === 'designacion' ? 'yo' : 'nos', gen: 1 }) +
+        ((des || nota) ? F.text('destOrg', 'Organismo (opcional)', { v: des ? 'Gobierno Provincia de San Juan' : '', cls: 'full' }) : '') +
+        F.text('destNombre', 'Nombre', { v: DEST[t][1] }) +
+        F.sel('saludo', 'Fórmula', [['Presente.', 'Presente'], ['S________________/_________________D', 'S____/____D'], ['S………………/………….......D', 'S……/……D'], ['', 'Ninguna']], { v: des ? 'S________________/_________________D' : 'Presente.' }) +
+        (nota ? F.sel('apertura', 'Apertura', [['', 'Ninguna'], ['De mi mayor consideración:', 'De mi mayor consideración'], ['De nuestra consideración:', 'De nuestra consideración'], ['De nuestra mayor consideración:', 'De nuestra mayor consideración']], {}) :
+          F.sel('persona', 'Redacción', [['nos', 'Plural: "Nos dirigimos…"'], ['yo', 'Singular: "Tengo el agrado…"']], { v: des ? 'yo' : 'nos', gen: 1 })) +
         '</div></section>';
     } else {
       h += '<section class="card"><h2>Certificado</h2><div class="grid">' +
@@ -200,11 +222,14 @@
         '</div></section>';
     } else if (t === 'designacion') {
       h += '<section class="card"><h2>Designación</h2><div class="grid">' +
-        F.text('prof', 'Profesional designado', { v: 'Bioingeniera Gabriela Hidalgo', gen: 1, cls: 'full' }) +
+        F.text('prof', 'Profesional designado', { v: 'Bioingeniera Gabriela Hidalgo', gen: 1 }) +
         F.text('mp', 'Matrícula', { v: 'MP 3927', gen: 1 }) +
-        F.month('desde', 'A partir de', { v: mesISO() }) +
-        F.text('org', 'Gestiones ante', { v: 'SECRETARIA DE ESTADO DE AMBIENTE Y DESARROLLO SUSTENTABLE', gen: 1, cls: 'full' }) +
-        F.text('adj', 'Documentación que se adjunta', { v: 'certificado del CPIASJ y DNI del nuevo profesional', gen: 1, cls: 'full' }) +
+        F.text('prof2', 'Segundo profesional (opcional)', { v: 'Ing. M. Florencia Palumbo Hidalgo', gen: 1 }) +
+        F.text('mp2', 'Matrícula', { v: 'MP 5163', gen: 1 }) +
+        F.sel('cuando', 'Desde', [['fecha', 'A partir de la fecha'], ['mes', 'A partir del mes de…']], { gen: 1 }) +
+        F.month('desde', 'Mes (si corresponde)', { v: mesISO() }) +
+        F.text('org', 'Gestiones ante', { v: 'SECRETARIA DE AMBIENTE Y DESARROLLO SUSTENTABLE', gen: 1, cls: 'full' }) +
+        F.text('adj', 'Documentación que se adjunta', { v: 'certificados de CPIESJ y DNI', gen: 1, cls: 'full' }) +
         '</div></section>';
     } else if (t === 'cdf') {
       h += '<section class="card"><h2>Generador</h2><div class="grid">' +
@@ -226,16 +251,21 @@
         '</div></section>';
     }
 
-    if (esCarta()) {
+    if (t === 'nota') {
+      h += '<section class="card"><h2>Texto de la nota</h2>' +
+        '<div class="grid">' + F.sel('modelo', 'Empezar desde un modelo (opcional)', [['', '— elegir —']].concat(MODELOS.map((m, i) => [String(i), m.n])), { cls: 'full' }) + '</div>' +
+        '<textarea id="cuerpo" rows="14" style="margin-top:12px" placeholder="Escribí acá el cuerpo de la nota. Una línea en blanco separa párrafos; las líneas que empiezan con “•” salen como viñetas."></textarea>' +
+        '<div class="grid" style="margin-top:12px">' + F.text('cierre', 'Cierre', { v: 'Sin otro particular, saludamos a usted atentamente.', list: 'dlCierre', cls: 'full' }) + '</div></section>';
+    } else if (esCarta()) {
       h += '<section class="card"><div class="fila"><h2 style="margin:0">Texto de la nota</h2><button class="linkbtn" id="btnAuto" type="button" hidden>↺ Volver al texto automático</button></div>' +
         '<textarea id="cuerpo" rows="9" style="margin-top:12px"></textarea>' +
         '<p class="hint">Se arma solo con los datos de arriba. Si lo escribís a mano, no se pisa. Línea que empieza con “•” = viñeta.</p></section>';
     }
 
-    if (t === 'ot' || t === 'manifiestos') {
-      h += '<section class="card"><h2>Comprobante de pago</h2><div id="compBox"></div></section>';
+    if (t === 'ot' || t === 'manifiestos' || t === 'nota') {
+      h += '<section class="card"><h2>Comprobante de pago' + (t === 'nota' ? ' (si corresponde)' : '') + '</h2><div id="compBox"></div></section>';
     }
-    if (t === 'ratificacion' || t === 'designacion') {
+    if (t === 'ratificacion' || t === 'designacion' || t === 'nota') {
       h += '<section class="card"><h2>Anexos</h2><div id="anexBox"></div><p class="hint">Se agregan como páginas al final del PDF, en el orden en que los cargues.</p></section>';
     }
 
@@ -299,7 +329,7 @@
 
   /* ------------------------------------------------------------ texto automático */
   function apertura() { return val('persona') === 'yo' ? 'Tengo el agrado de dirigirme a Ud. con el fin de' : 'Nos dirigimos a Usted, con el fin de'; }
-  function cierreCarta() { return val('persona') === 'yo' ? 'Sin otro particular, saludo a Ud. atte.' : 'Sin otro particular saludamos atte.'; }
+  function cierreCarta() { if (S.tipo === 'nota') return val('cierre'); return val('persona') === 'yo' ? 'Sin otro particular, saludo a Ud. atte.' : 'Sin otro particular saludamos atte.'; }
   const num = id => { const n = parseFloat(String(val(id)).replace(',', '.')); return isFinite(n) ? n : 0; };
 
   function textoAuto() {
@@ -333,11 +363,12 @@
       return apertura() + ' presentar en el expediente de referencia la siguiente documentación que adjuntamos a esta presentación:\n\n' + items.map(x => '• ' + x).join('\n');
     }
     if (t === 'designacion') {
-      const d = val('desde') ? /^(\d{4})-(\d{2})/.exec(val('desde')) : null;
-      const mes = d ? GHPDF.MESES[+d[2] - 1] + ' de ' + d[1] : '…';
-      return 'El que suscribe en carácter de representante legal de la empresa ut supra mencionada, tiene el agrado de dirigirse a Ud. a fin de comunicar que a partir del mes de ' + mes +
-        ', se designa como representante técnica, para realizar cualquier gestión ante la ' + (val('org') || '…') + ' a la ' + (val('prof') || '…') + (val('mp') ? ', ' + val('mp') : '') + '.' +
-        (val('adj') ? '\n\nSe adjunta ' + val('adj').replace(/^se adjunta\s+/i, '').replace(/\.$/, '') + '.' : '');
+      const m = /^(\d{4})-(\d{2})/.exec(val('desde') || '');
+      const desde = val('cuando') === 'mes' ? 'a partir del mes de ' + (m ? GHPDF.MESES[+m[2] - 1] + ' de ' + m[1] : '…') : 'a partir de la fecha';
+      const profes = (val('prof') || '…') + (val('mp') ? ', ' + val('mp') : '') + (val('prof2') ? ' e ' + val('prof2') + (val('mp2') ? ' ' + val('mp2') : '') : '');
+      return 'El que suscribe en carácter de representante legal de la empresa ut supra mencionada, tiene el agrado de dirigirse a Ud. a fin de comunicar que ' + desde +
+        ' se designa como representante técnica, para realizar cualquier gestión ante la ' + (val('org') || '…') + ' a la ' + profes +
+        (val('adj') ? ', se adjuntan ' + val('adj').replace(/^se adjuntan?\s+/i, '').replace(/\.$/, '') : '') + '.';
     }
     return '';
   }
@@ -353,15 +384,15 @@
     S.empSel = val('emp');
     setVal('nombreEmp', e ? e.nombre : '');
     const t = S.tipo;
-    const ok = x => t === 'ot' ? /tpte.*rsu/i.test(x.tipo) : t === 'manifiestos' ? (/rrpp/i.test(x.tipo) && /gen/i.test(x.tipo)) : true;
+    const ok = x => t === 'nota' ? true : t === 'ot' ? /tpte.*rsu/i.test(x.tipo) : t === 'manifiestos' ? (/rrpp/i.test(x.tipo) && /gen/i.test(x.tipo)) : true;
     const L = e ? e.expedientes : [];
     const orden = L.filter(ok).concat(L.filter(x => !ok(x)));
     $('dlExp').innerHTML = orden.map(x => '<option value="' + esc(x.exp) + '">' + esc(x.tipo + (x.evaluador ? ' · ' + x.evaluador : '')) + '</option>').join('');
-    let pick = t === 'designacion' ? null : L.filter(ok)[0];
+    let pick = t === 'designacion' ? null : (t === 'nota' ? (L.length === 1 ? L[0] : null) : L.filter(ok)[0]);
     setVal('exp', pick ? pick.exp : '');
     if ($('eval')) { setVal('eval', pick ? pick.evaluador : ''); }
     if ($('expHint')) {
-      $('expHint').textContent = e && !pick && (t === 'ot' || t === 'manifiestos')
+      $('expHint').textContent = t === 'nota' ? (pick ? pick.tipo : (L.length ? 'Elegí uno de la lista (' + L.length + ' expedientes); el evaluador se completa solo.' : '')) : e && !pick && (t === 'ot' || t === 'manifiestos')
         ? 'No hay expediente de ' + (t === 'ot' ? 'transporte RSU' : 'generador RRPP') + ' cargado para esta empresa: escribilo.'
         : (pick ? pick.tipo : '');
     }
@@ -488,6 +519,7 @@
       case 'manifiestos': return 'Pedido de manifiestos ' + mes + ' ' + aa;
       case 'ratificacion': return 'Ratificación de presentaciones ' + mes + ' ' + aa;
       case 'designacion': return 'Designación representante técnico ' + mes + ' ' + aa;
+      case 'nota': return ('Nota ' + (val('ref') ? val('ref') + ' ' : '') + mes + ' ' + aa).replace(/[\\/:*?"<>|]/g, ' ');
       case 'cdf': {
         const c = { tipo: [...new Set(S.cards.map(x => String(x.mat).trim().toUpperCase()).filter(Boolean))].join('-') }, d = mesDestino();
         const g = String(val('gNom')).toUpperCase(), tr = String(val('tNom')).toUpperCase();
@@ -499,11 +531,15 @@
 
   function parrafosDe(texto) {
     const out = [];
+    const esVineta = l => /^\s*[•\-]\s+/.test(l);
     String(texto || '').split(/\n{2,}/).forEach(bloque => {
-      const lineas = bloque.split('\n').filter(l => l.trim());
-      if (!lineas.length) return;
-      if (lineas.every(l => /^\s*[•\-]\s+/.test(l))) lineas.forEach(l => out.push({ t: 'li', texto: l.replace(/^\s*[•\-]\s+/, '') }));
-      else out.push({ t: 'p', texto: lineas.join(' ') });
+      let buf = [];
+      const volcar = () => { if (buf.length) out.push({ t: 'p', texto: buf.join(' ') }); buf = []; };
+      bloque.split('\n').filter(l => l.trim()).forEach(l => {
+        if (esVineta(l)) { volcar(); out.push({ t: 'li', texto: l.replace(/^\s*[•\-]\s+/, '') }); }
+        else buf.push(l.trim());
+      });
+      volcar();
     });
     return out;
   }
@@ -518,30 +554,37 @@
     if (esCarta()) {
       const e = empActual(), t = S.tipo;
       if (!e) avisos.push('Elegí la empresa.');
-      if (t !== 'designacion' && !val('exp')) avisos.push('Falta el expediente.');
-      if (t !== 'designacion' && !val('eval')) ojos.push('No hay evaluador/a cargado.');
+      if (t !== 'designacion' && t !== 'nota' && !val('exp')) avisos.push('Falta el expediente.');
+      if (t === 'nota' && !val('exp')) ojos.push('La nota sale sin número de expediente.');
+      if (t !== 'designacion' && t !== 'nota' && !val('eval')) ojos.push('No hay evaluador/a cargado.');
+      if (t === 'nota' && /\[[^\]\n]+\]/.test(val('cuerpo'))) ojos.push('Quedan campos entre corchetes [ ] sin completar en el texto.');
       if (t === 'ot' && num('cantP') + num('cantR') <= 0) avisos.push('Indicá cuántas órdenes se piden.');
       if (t === 'manifiestos' && num('cantM') <= 0) avisos.push('Indicá cuántos manifiestos se piden.');
-      if (t === 'designacion' && !val('destNombre')) ojos.push('Falta el nombre del destinatario.');
+      if ((t === 'designacion' || t === 'nota') && !val('destNombre')) ojos.push('Falta el nombre del destinatario.');
       if ((t === 'ot' || t === 'manifiestos') && !S.comp) ojos.push('No se adjuntó comprobante de pago.');
       if (!String(val('cuerpo')).trim()) avisos.push('El texto de la nota está vacío.');
       const refs = [];
+      if (t === 'nota') refs.push(['Ref:', val('ref')]);
       refs.push(['Expte. Nº:', val('exp')]);
       refs.push(['Empresa:', val('nombreEmp')]);
+      if (t === 'nota' || t === 'designacion') refs.push(['Cuit:', val('cuit')]);
+      if (t === 'nota') refs.push(['Ubicación:', val('ubic')]);
       if (t === 'ot') { refs.push(['N° Registro:', val('nreg')]); refs.push(['N° Res:', val('nres')]); refs.push(['Fecha Venc:', val('fvenc')]); }
-      if (t !== 'designacion') { refs.push(['RCA:', val('rca')]); refs.push([generoEval(val('eval')), val('eval')]); }
+      refs.push(['RCA:', val('rca')]);
+      if (t === 'designacion') { if (val('rca2')) refs.push(['', val('rca2')]); }
+      else refs.push([t === 'nota' && val('etiqEval') !== 'auto' ? val('etiqEval') : generoEval(val('eval')), val('eval')]);
       const logo = e && e.logo ? await cargarLogo(e.clave) : null;
       if (e && e.logo && !logo) ojos.push('No se pudo cargar el logo de la empresa.');
       if (e && !e.logo) ojos.push('Esta empresa no tiene logo cargado: la nota sale sin membrete.');
-      const anexos = (t === 'ratificacion' || t === 'designacion') ? S.anexos : [];
-      const comprobante = (t === 'ot' || t === 'manifiestos') ? S.comp : null;
+      const anexos = (t === 'ratificacion' || t === 'designacion' || t === 'nota') ? S.anexos : [];
+      const comprobante = (t === 'ot' || t === 'manifiestos' || t === 'nota') ? S.comp : null;
       if (S.formato !== 'pdf') {
         if (comprobante && comprobante.tipo === 'pdf') ojos.push('En Word no entra el comprobante en PDF (en el PDF sí). Subí una imagen o captura si lo querés en Word.');
         if (anexos.some(a => a.tipo === 'pdf')) ojos.push('En Word no entran los anexos en PDF (en el PDF sí).');
       }
       return { kind: 'carta', avisos, ojos, datos: {
         fecha, logo, destinatario: [val('destCargo'), val('destOrg'), val('destNombre')], saludo: val('saludo'), refs,
-        parrafos: parrafosDe(val('cuerpo')), comprobante, cierre: cierreCarta(), anexos } };
+        parrafos: (t === 'nota' && val('apertura') ? [{ t: 'p', texto: val('apertura'), sangria: false }] : []).concat(parrafosDe(val('cuerpo'))), comprobante, cierre: cierreCarta(), anexos } };
     }
 
     // ---- CDF
@@ -685,6 +728,7 @@
         }
       } else carpeta = val('carpeta');
       const meta = { tipo: S.tipo, empresa: S.tipo === 'cdf' ? 'RECICLADOS INDUSTRIALES' : val('emp') };
+      if (S.tipo === 'nota') meta.destinatario = { cargo: val('destCargo'), org: val('destOrg'), nombre: val('destNombre') };
       if (S.tipo === 'cdf') {
         const g = pdf.r.datos.generador, t = pdf.r.datos.transportista;
         meta.numero = pdf.r.n;
@@ -739,6 +783,7 @@
   }
 
   function construir() {
+    if (S.tipo === 'nota') S.manual = true;
     const col = $('col-form');
     col.innerHTML = formHTML();
     pintarArchivos(); pintarHist(); pintarTarjetas();
@@ -759,7 +804,7 @@
     col.addEventListener('input', ev => {
       const id = ev.target.id;
       S.guardadoOk = false;
-      if (id === 'cuerpo') { S.manual = true; $('btnAuto').hidden = false; pedirRender(); return; }
+      if (id === 'cuerpo') { S.manual = true; if ($('btnAuto')) $('btnAuto').hidden = false; pedirRender(); return; }
       if (id === 'emp') return;
       if (onTarjeta(ev)) { pedirRender(); return; }
       if (id === 'exp') onExp();
@@ -771,6 +816,16 @@
       S.guardadoOk = false;
       if (id === 'emp') { onEmpresa(); return; }
       if (id === 'carpeta') { pedirRender(); return; }
+      if (id === 'destPre') {
+        const x = (S.datos.destinatarios || [])[+ev.target.value];
+        if (x) { setVal('destCargo', x.cargo); setVal('destOrg', x.org || ''); setVal('destNombre', x.nombre || ''); }
+        pedirRender(); return;
+      }
+      if (id === 'modelo') {
+        const m = MODELOS[+ev.target.value];
+        if (m && (!$('cuerpo').value.trim() || window.confirm('El texto actual se va a reemplazar por el modelo. ¿Seguimos?'))) { $('cuerpo').value = m.t; S.manual = true; }
+        ev.target.value = ''; pedirRender(); return;
+      }
       if (id === 'anioSel') { S.mesManual = true; pedirRender(); return; }
       if (id === 'mesSel') { S.mesManual = true; pedirRender(); return; }
       if (ev.target.closest && ev.target.closest('.mcard')) { onTarjeta(ev); pedirRender(); return; }

@@ -182,7 +182,7 @@
         const etiqueta = san(r[0]);
         const valor = san(r[1]);
         asegurar(LH);
-        const anchoE = F.b.widthOfTextAtSize(etiqueta, SZ) + 4;
+        const anchoE = etiqueta ? F.b.widthOfTextAtSize(etiqueta, SZ) + 4 : 0;
         const ls = partir(valor, F.b, SZ, bw - anchoE);
         ls.forEach((l, i) => {
           asegurar(LH);
